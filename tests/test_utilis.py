@@ -1,5 +1,6 @@
 from datetime import datetime
-
+from src.utils import cashback_by_category
+import json
 import pytest
 
 from src.utils import get_greeting, parse_datetime, to_json
@@ -35,3 +36,22 @@ def test_to_json():
     result = to_json(data)
     assert isinstance(result, str)
     assert '"a": 1' in result
+
+
+def test_cashback_by_category_regular():
+    data = [
+        {"Дата операции": "2024-05-15", "Категория": "Супермаркеты", "Кэшбэк": 100},
+        {"Дата операции": "2024-05-18", "Категория": "Фастфуд", "Кэшбэк": 200},
+        {"Дата операции": "2024-05-20", "Категория": "Супермаркеты", "Кэшбэк": 50},
+        {"Дата операции": "2024-04-18", "Категория": "Фастфуд", "Кэшбэк": 30},
+    ]
+    result = cashback_by_category(data, 2024, 5)
+    assert json.loads(result) == {"Супермаркеты": 150, "Фастфуд": 200}
+
+def test_cashback_by_category_no_matches():
+    data = [
+        {"Дата операции": "2023-05-15", "Категория": "Супермаркеты", "Кэшбэк": 100},
+        {"Дата операции": "2023-05-18", "Категория": "Фастфуд", "Кэшбэк": 200},
+    ]
+    result = cashback_by_category(data, 2024, 6)
+    assert json.loads(result) == {}
