@@ -1,15 +1,7 @@
-import pandas as pd
 from src.views import main_page
 from src.services import cashback_by_category
 from src.reports import category_report
-
-# Пример данных для DataFrame
-df = pd.DataFrame([
-    {"date": "2024-05-15", "amount": -1000, "category": "Супермаркеты", "description": "Пятёрочка"},
-    {"date": "2024-05-18", "amount": -800, "category": "Фастфуд", "description": "Макдоналдс"},
-    {"date": "2024-05-22", "amount": 5000, "category": "Пополнение", "description": "Зарплата"}
-])
-df['date'] = pd.to_datetime(df['date'])
+import pandas as pd
 
 # Для сервиса - список словарей
 data = [
@@ -19,10 +11,13 @@ data = [
 
 if __name__ == "__main__":
     print("--- Главная страница ---")
-    print(main_page("2024-05-22 12:00:00", df))
+    print(main_page("2024-05-22 12:00:00"))
 
     print("--- Выгодные категории кешбэка ---")
     print(cashback_by_category(data, 2024, 5))
 
     print("--- Траты по категории ---")
+    # Для category_report нужен DataFrame
+    df = pd.read_csv("data/operations.csv")
+    df['date'] = pd.to_datetime(df['date'])
     print(category_report(df, "Супермаркеты", "2024-05-22"))

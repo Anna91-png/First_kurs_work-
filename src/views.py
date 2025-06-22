@@ -1,20 +1,24 @@
-import pandas as pd
-from src.utils import parse_datetime, get_greeting, to_json
+import pandas as pd  # type: ignore
+from src.utils import get_greeting, to_json
 
-def main_page(date_str, df):
+
+def main_page(current_time: str) -> str:
     """
     Формирует данные для главной страницы.
-
-    :param date_str: Дата и время в формате 'YYYY-MM-DD HH:MM:SS'
-    :param df: DataFrame с транзакциями (обязательные столбцы: date, amount, category, description)
+    :param current_time: Дата и время в формате 'YYYY-MM-DD HH:MM:SS'
     :return: JSON-строка с приветствием и топ-5 транзакциями
     """
-    date = parse_datetime(date_str)
-    top_transactions = df.sort_values(by='amount', key=abs, ascending=False).head(5)[["date", "amount", "category", "description"]].copy()
-    # Исправление: даже для пустого DataFrame явно приводим тип
-    top_transactions['date'] = pd.to_datetime(top_transactions['date'], errors='coerce').dt.strftime('%Y-%m-%d')
+    df = pd.read_csv("data/operations.csv")
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    top_transactions = (
+        df.sort_values(by="amount", key=abs, ascending=False)
+        .head(5)[["date", "amount", "category", "description"]]
+        .copy()
+    )
+    top_transactions["date"] = top_transactions["date"].dt.strftime("%Y-%m-%d")
     result = {
-        "greeting": get_greeting(date),
-        "top_transactions": top_transactions.to_dict(orient='records')
+        "greeting": get_greeting(),
+        "now": current_time,
+        "top_transactions": top_transactions.to_dict(orient="records")
     }
     return to_json(result)

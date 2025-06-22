@@ -1,26 +1,20 @@
-import json
-import datetime as dt
+from typing import List, Dict
 
 
-def cashback_by_category(data, year, month):
+def cashback_by_category(data: List[Dict[str, int | str]], year: int, month: int) -> str:
     """
-    Анализирует, сколько можно было заработать кешбэка в разных категориях за указанный месяц года.
-
-    :param data: Список словарей-транзакций с полями "Дата операции", "Категория", "Кэшбэк"
-    :param year: Год для анализа
-    :param month: Месяц для анализа
-    :return: JSON-строка с суммой кешбэка по категориям
+    Возвращает категории с максимальным кэшбэком за месяц.
     """
-    filtered = list(filter(
-        lambda tr: (
-                dt.datetime.strptime(tr["Дата операции"], "%Y-%m-%d").year == year and
-                dt.datetime.strptime(tr["Дата операции"], "%Y-%m-%d").month == month and
-                tr.get("Кэшбэк", 0) > 0
-        ),
-        data
-    ))
-    result = {}
-    for tr in filtered:
-        cat = tr["Категория"]
-        result[cat] = result.get(cat, 0) + tr["Кэшбэк"]
-    return json.dumps(result, ensure_ascii=False)
+    filtered = [
+        item for item in data
+        if int(str(item["Дата операции"])[:4]) == year and int(str(item["Дата операции"])[5:7]) == month
+    ]
+    if not filtered:
+        return "Нет операций за этот месяц"
+    grouped = {}
+    for item in filtered:
+        cat = str(item["Категория"])
+        grouped[cat] = grouped.get(cat, 0) + int(item["Кэшбэк"])
+    max_cashback = max(grouped.values())
+    best_cats = [cat for cat, cb in grouped.items() if cb == max_cashback]
+    return f"Лучшие категории: {', '.join(best_cats)} (Кэшбэк: {max_cashback})"
